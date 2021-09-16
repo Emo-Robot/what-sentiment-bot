@@ -41,3 +41,21 @@ def preprocess_tweet(tweet):
             tweets_clean.append(stem_word)
 
     return tweets_clean
+
+def build_freqs(tweets, ys):
+    #np array to list
+    yslist = np.squeeze(ys).tolist()
+
+    #builds frequences dict by looping all tweets words
+    freqs = {}
+
+    for y,tweet in zip(yslist, tweets):
+        for word in preprocess_tweet(tweet):
+            pair = (word, y)
+            if pair in freqs:
+                freqs[pair] += 1
+            
+            else:
+                freqs[pair] = 1
+    
+    return freqs
