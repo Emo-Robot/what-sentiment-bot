@@ -6,18 +6,9 @@ import os.path
 class FreqsTable():
 
     ########################### CONNECTION ##################################
-    def __connect_words(self):
+    def __connect_bd(self):
         # create words table
-        freqs_path = os.path.abspath("ml/naive_bayes/db/freqs_table/words.db")
-        # connect to db
-        conn = sqlite3.connect(freqs_path)
-        # create  cursor
-        cur = conn.cursor()
-        return conn, cur
-
-    def __connect_freqs(self):
-        # create words table
-        freqs_path = os.path.abspath("ml/naive_bayes/db/freqs_table/freqs.db")
+        freqs_path = os.path.abspath("ml/naive_bayes/db/freqs_table/bd.db")
         # connect to db
         conn = sqlite3.connect(freqs_path)
         # create  cursor
@@ -30,9 +21,9 @@ class FreqsTable():
 
     ########################### CREATION ##################################
     def create_words_freqs(self):
-        # create words table
-        conn, cur = self.__connect_words()
+        conn, cur = self.__connect_bd(self)
 
+        # create words table
         cur.execute("""
             CREATE TABLE words (
                 word text,
@@ -40,43 +31,34 @@ class FreqsTable():
                 freq_id integer
             )
         """)
-
-        self.__disconnect(conn)
-
         # create freqs table
-        conn, cur = self.__connect_freqs()
-
         cur.execute("""
             CREATE TABLE freqs (
                 pos_freq integer,
                 neg_freq integer,
-                ratio real
+                loglikelihood real
             )
         """)
 
         self.__disconnect(conn)
 
-    ########################### CRUD ##################################
-    def add_word(self, word: str, sentiment: int, pos_freq:int, neg_freq:int):
-        word_cur, word_conn = self.__connect_words()
-        freqs_cur, freqs_conn = self.__connect_words()
-        
-        ratio = pos_freq/neg_freq
+    def add_word(self, word: str, sentiment: int, pos_freq: int, neg_freq: int, loglikelihood: float):
+        conn, cur = self.__connect_bd(self)
 
-        freqs_cur.execute("INSERT INTO freqs VALUES ({pos_freq},{neg_freq},{ratio})")
-        word_cur.execute("INSERT INTO words VALUES ({word}, {sentiment}, {freqs_cur.lastrowid})")
+        cur.execute(
+            "INSERT INTO freqs VALUES ({pos_freq},{neg_freq},{loglikelihood})")
+        cur.execute(
+            "INSERT INTO words VALUES ({word}, {sentiment}, {cur.lastrowid})")
 
-        self.__disconnect(freqs_conn)
-        self.__disconnect(word_conn)
-    
-    def add_word_set(self, word: str, sentiment: int, pos_freq:int, neg_freq:int):
-        word_cur, word_conn = self.__connect_words()
-        freqs_cur, freqs_conn = self.__connect_words()
-        
-        ratio = pos_freq/neg_freq
+        self.__disconnect(conn)
 
-        freqs_cur.execute("INSERT INTO freqs VALUES ({pos_freq},{neg_freq},{ratio})")
-        word_cur.execute("INSERT INTO words VALUES ({word}, {sentiment}, {freqs_cur.lastrowid})")
+    # def add_word_set(self, word: str, sentiment: int, pos_freq: int, neg_freq: int):
+    #     conn, cur = self.__connect_bd(self)
 
-        self.__disconnect(freqs_conn)
-        self.__disconnect(word_conn)
+    #     ratio = pos_freq/neg_freq
+
+    #     cur.execute("INSERT INTO freqs VALUES ({pos_freq},{neg_freq},{ratio})")
+    #     cur.execute(
+    #         "INSERT INTO words VALUES ({word}, {sentiment}, {freqs_cur.lastrowid})")
+
+    #     self.__disconnect(conn)
