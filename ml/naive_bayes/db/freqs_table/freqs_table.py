@@ -1,9 +1,47 @@
+from preprocess.preprocess import preprocess_tweet
+import numpy as np
 import sqlite3
 import sqlite3
 import os.path
 
 
 class FreqsTable():
+    ######################### CONSTRUCTORS ################################
+
+    #table = FreqsTable(tweets,ys)
+    @classmethod
+    def abacate(cls, tweets, ys):
+        # create db
+        conn, cur = cls.__connect_bd(cls)
+
+        # create class
+        table = cls.__new__(cls)  # Does not call __init__
+        # Don't forget to call any polymorphic base class initializers
+        super(FreqsTable, table).__init__()
+
+        # np array to list
+        yslist = np.squeeze(ys).tolist()
+
+        # builds frequences dict by looping all tweets words
+        freqs = {}
+
+        for y, tweet in zip(yslist, tweets):
+            for word in preprocess_tweet(tweet):
+                pair = (word, y)
+                if pair in freqs:
+                    freqs[pair] += 1
+
+                else:
+                    cur.execute(
+                        "INSERT INTO freqs VALUES (0, 0, 0.0)")
+                    cur.execute(
+                        "INSERT INTO words VALUES ({word}, {y}, {cur.lastrowid})")
+
+        # close db
+        cls.__disconnect(conn)
+
+        # return class
+        return table
 
     ########################### CONNECTION ##################################
     def __connect_bd(self):
@@ -19,21 +57,14 @@ class FreqsTable():
         conn.commit()
         conn.close()
 
-    ########################### CREATION ##################################
+    ########################### CRUD ##################################
     def create_words_freqs(self):
         conn, cur = self.__connect_bd(self)
 
-        # create words table
+        # create word freqs table
         cur.execute("""
             CREATE TABLE words (
                 word text,
-                sentiment integer,
-                freq_id integer
-            )
-        """)
-        # create freqs table
-        cur.execute("""
-            CREATE TABLE freqs (
                 pos_freq integer,
                 neg_freq integer,
                 loglikelihood real
