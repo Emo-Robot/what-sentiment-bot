@@ -10,7 +10,7 @@ class FreqsTable():
 
     #table = FreqsTable(tweets,ys)
     @classmethod
-    def abacate(cls, tweets, ys):
+    def build_from(cls, tweets, ys):
         # create db
         conn, cur = cls.__connect_bd(cls)
 
@@ -27,15 +27,19 @@ class FreqsTable():
 
         for y, tweet in zip(yslist, tweets):
             for word in preprocess_tweet(tweet):
-                pair = (word, y)
-                if pair in freqs:
-                    freqs[pair] += 1
+                #update freqs count 
+                freq_type = "pos_freq" if y == 1 else "neg_freq"
+                cur.execute("""
+                    UPDATE words SET {freq_type} = {freq_type} + 1 WHERE word LIKE {word}
+                """)
 
-                else:
-                    cur.execute(
-                        "INSERT INTO freqs VALUES (0, 0, 0.0)")
-                    cur.execute(
-                        "INSERT INTO words VALUES ({word}, {y}, {cur.lastrowid})")
+                #if the word is not into the table yet...
+                if(cur.rowcount == 0):
+                    pos, neg = 0
+                    pos = 1 if y == 1 else neg = 1
+                    cur.execute("""
+                        INSERT INTO words VALUES ({word}, {pos}, {neg}, 0.0)
+                    """)
 
         # close db
         cls.__disconnect(conn)
