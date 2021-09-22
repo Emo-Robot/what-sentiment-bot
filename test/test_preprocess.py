@@ -8,8 +8,8 @@ import test_utils as test
 get_dataset()
 
 tweet = get_random_tweet()
-print('\033[92m' + tweet)
+#print('\033[92m' + tweet)
 
 tweet = preprocess_tweet(tweet)
-print('\033[94m')
+#print('\033[94m')
 print(tweet)

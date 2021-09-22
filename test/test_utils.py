@@ -33,6 +33,6 @@ def get_random_neg():
 def get_random_tweet():
     pos_neg = random.randint(0,1)
     if pos_neg == 0 :
-        return get_random_neg()
+        return (get_random_neg(),0)
     else:
-        return get_random_pos()
+        return (get_random_pos(),1)

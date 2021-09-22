@@ -1,4 +1,6 @@
-from preprocess.preprocess import preprocess_tweet
+import sys
+sys.path.append('../what-sentiment-bot/preprocess')
+from preprocess import preprocess_tweet
 import numpy as np
 import sqlite3
 import sqlite3
@@ -11,13 +13,15 @@ class FreqsTable():
     #table = FreqsTable(tweets,ys)
     @classmethod
     def build_from(cls, tweets, ys):
-        # create db
-        conn, cur = cls.__connect_bd(cls)
-
         # create class
         table = cls.__new__(cls)  # Does not call __init__
         # Don't forget to call any polymorphic base class initializers
         super(FreqsTable, table).__init__()
+
+        # create db
+        table.__create_words_freqs()
+        conn, cur = table.__connect_bd()
+
 
         # np array to list
         yslist = np.squeeze(ys).tolist()
@@ -27,22 +31,21 @@ class FreqsTable():
 
         for y, tweet in zip(yslist, tweets):
             for word in preprocess_tweet(tweet):
-                #update freqs count 
+                # update freqs count
                 freq_type = "pos_freq" if y == 1 else "neg_freq"
-                cur.execute("""
-                    UPDATE words SET {freq_type} = {freq_type} + 1 WHERE word LIKE {word}
-                """)
+                cur.execute("UPDATE words SET " + freq_type + " = " +
+                            freq_type + " + 1 WHERE word LIKE ?", (word,))
 
-                #if the word is not into the table yet...
+                # if the word is not into the table yet...
                 if(cur.rowcount == 0):
-                    pos, neg = 0
-                    pos = 1 if y == 1 else neg = 1
+                    pos = 1 if y == 1 else 0
+                    neg = 1 if y == 0 else 0
                     cur.execute("""
-                        INSERT INTO words VALUES ({word}, {pos}, {neg}, 0.0)
-                    """)
+                        INSERT INTO words VALUES (?, ?, ?, ?)
+                    """, (word, pos, neg, 0.0))
 
         # close db
-        cls.__disconnect(conn)
+        table.__disconnect(conn)
 
         # return class
         return table
@@ -50,7 +53,7 @@ class FreqsTable():
     ########################### CONNECTION ##################################
     def __connect_bd(self):
         # create words table
-        freqs_path = os.path.abspath("ml/naive_bayes/db/freqs_table/bd.db")
+        freqs_path = os.path.abspath("ml/naive_bayes/db/freqs_table/db.db")
         # connect to db
         conn = sqlite3.connect(freqs_path)
         # create  cursor
@@ -61,9 +64,21 @@ class FreqsTable():
         conn.commit()
         conn.close()
 
+    ####################### Query & Fetch #################################
+    def fetch_all_words(self):
+        conn, cur = self.__connect_bd()
+
+        cur.execute("SELECT * FROM words")
+
+        row = cur.fetchall()
+
+        self.__disconnect(conn)
+
+        return row
+
     ########################### CRUD ##################################
-    def create_words_freqs(self):
-        conn, cur = self.__connect_bd(self)
+    def __create_words_freqs(self):
+        conn, cur = self.__connect_bd()
 
         # create word freqs table
         cur.execute("""
@@ -77,13 +92,12 @@ class FreqsTable():
 
         self.__disconnect(conn)
 
-    def add_word(self, word: str, sentiment: int, pos_freq: int, neg_freq: int, loglikelihood: float):
-        conn, cur = self.__connect_bd(self)
+    def add_word(self, word: str, pos_freq: int, neg_freq: int, loglikelihood: float):
+        conn, cur = self.__connect_bd()
 
-        cur.execute(
-            "INSERT INTO freqs VALUES ({pos_freq},{neg_freq},{loglikelihood})")
-        cur.execute(
-            "INSERT INTO words VALUES ({word}, {sentiment}, {cur.lastrowid})")
+        cur.execute("""
+            INSERT INTO words VALUES (?, ?, ?)
+        """, (word, pos_freq, neg_freq, loglikelihood))
 
         self.__disconnect(conn)
 

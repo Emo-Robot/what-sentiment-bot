@@ -13,10 +13,11 @@ import numpy as np
 #removing undesired substrigns
 def preprocess_tweet(tweet):
     stemmer = PorterStemmer()
-    nltk.download('stopwords')
+    #TODO installing stopwords every time
+    #nltk.download('stopwords')
     stopwords_en = stopwords.words('english')
 
-    print('\033[92m' + tweet)
+    #print('\033[92m' + tweet)
 
     #remove stock market tickers, old rt, hyperlinks, hash sign 
     tweet = re.sub(r'\$\w*', '', tweet)
