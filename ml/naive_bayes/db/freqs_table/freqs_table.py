@@ -5,6 +5,7 @@ import sys
 sys.path.append('../what-sentiment-bot/preprocess')
 from preprocess import preprocess_tweet
 
+
 class FreqsTable():
     ######################### CONSTRUCTORS ################################
 
@@ -75,8 +76,6 @@ class FreqsTable():
 
     def count_words(self):
         conn, cur = self.__connect_bd()
-
-        cur.execute('SELECT * FROM words')
 
         cur.execute('SELECT COUNT(*) FROM words')
 
