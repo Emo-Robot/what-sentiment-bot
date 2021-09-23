@@ -1,6 +1,4 @@
 #responsable for 
-
-import nltk                                # Python library for NLP
 from nltk.corpus import twitter_samples    # sample Twitter dataset from NLTK
 from nltk.corpus import stopwords          # module for stop words that come with NLTK
 from nltk.stem import PorterStemmer        # module for stemming
@@ -34,11 +32,11 @@ def preprocess_tweet(tweet):
 
     
     #remove stopwords, ponctuation and perform steamming
-    tweets_clean = []
+    tweet_clean = []
     
     for word in tweet_tokens:
         if (word not in stopwords_en and word not in string.punctuation):
             stem_word = stemmer.stem(word)
-            tweets_clean.append(stem_word)
+            tweet_clean.append(stem_word)
 
-    return tweets_clean
+    return tweet_clean

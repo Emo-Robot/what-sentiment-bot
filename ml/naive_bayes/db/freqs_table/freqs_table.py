@@ -1,11 +1,9 @@
+import os.path
+import sqlite3
+import numpy as np
 import sys
 sys.path.append('../what-sentiment-bot/preprocess')
 from preprocess import preprocess_tweet
-import numpy as np
-import sqlite3
-import sqlite3
-import os.path
-
 
 class FreqsTable():
     ######################### CONSTRUCTORS ################################
@@ -22,13 +20,10 @@ class FreqsTable():
         table.__create_words_freqs()
         conn, cur = table.__connect_bd()
 
-
         # np array to list
         yslist = np.squeeze(ys).tolist()
 
         # builds frequences dict by looping all tweets words
-        freqs = {}
-
         for y, tweet in zip(yslist, tweets):
             for word in preprocess_tweet(tweet):
                 # update freqs count
@@ -76,7 +71,33 @@ class FreqsTable():
 
         return row
 
+    ########################### UTILS ##################################
+
+    def count_words(self):
+        conn, cur = self.__connect_bd()
+
+        cur.execute('SELECT * FROM words')
+
+        cur.execute('SELECT COUNT(*) FROM words')
+
+        n_rows = cur.fetchone()[0]
+
+        self.__disconnect(conn)
+
+        return n_rows
+
+    def sum_column(self, c):
+        conn, cur = self.__connect_bd()
+
+        cur.execute('SELECT SUM(' + c + ') FROM words')
+
+        sum_c = cur.fetchone()[0]
+
+        self.__disconnect(conn)
+
+        return sum_c
     ########################### CRUD ##################################
+
     def __create_words_freqs(self):
         conn, cur = self.__connect_bd()
 
