@@ -95,6 +95,15 @@ class FreqsTable():
         self.__disconnect(conn)
 
         return sum_c
+
+    def get_column(self, c):
+        conn, cur = self.__connect_bd()
+        
+        column = [column[0] for column in cur.execute('SELECT ' + c + ' FROM words')]
+
+        self.__disconnect(conn)
+
+        return column
     ########################### CRUD ##################################
 
     def __create_words_freqs(self):
@@ -112,6 +121,18 @@ class FreqsTable():
 
         self.__disconnect(conn)
 
+    def create_utils(self):
+        conn, cur = self.__connect_bd()
+        
+        cur.execute("""
+            CREATE TABLE utils (
+                
+                logprior real
+            )
+        """)
+        
+        self.__disconnect(conn)
+
     def add_word(self, word: str, pos_freq: int, neg_freq: int, loglikelihood: float):
         conn, cur = self.__connect_bd()
 
@@ -121,6 +142,20 @@ class FreqsTable():
 
         self.__disconnect(conn)
 
+    def update_loglikelihood(self, loglikelihood: float, word):
+        conn, cur  = self.__connect_bd()
+
+        cur.execute("UPDATE words SET loglikelihood = ? WHERE word LIKE ?", (loglikelihood, word,))
+
+        self.__disconnect(conn)
+    
+    def add_logprior(self, logprior: float):
+        conn, cur = self.__connect_bd()
+        
+        cur.execute("INSERT INTO utils (logprior) values(?)",(logprior,))
+        
+        self.__disconnect(conn)
+    
     # def add_word_set(self, word: str, sentiment: int, pos_freq: int, neg_freq: int):
     #     conn, cur = self.__connect_bd(self)
 

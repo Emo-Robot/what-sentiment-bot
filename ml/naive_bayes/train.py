@@ -19,8 +19,9 @@ pos_size = len(all_positive_tweets)
 neg_size = len(all_negative_tweets)
 ys = np.append(np.ones(pos_size), np.zeros(neg_size))
 
-#build freqs table database
+#build freqs table database and the utils table
 table = FreqsTable.build_from(tweets, ys)
+table.create_utils()
 
 ########################### TRAIN #########################################
 #number of unique words
@@ -44,3 +45,19 @@ print("D_neg",D_neg)
 
 #reason between pos and neg docs
 logprior = np.log(D_pos) - np.log(D_neg)
+table.add_logprior(logprior)
+
+#list of positive and negative frequency
+freq_pos = table.get_column('pos_freq')
+freq_neg = table.get_column('neg_freq')
+list_words = table.get_column('word')
+
+#probability of each word being positive or negative
+for freq_p, freq_n in zip(freq_pos, freq_neg):
+    p_w_pos = (freq_p + 1) / (N_pos + V)
+    p_w_neg = (freq_n + 1) / (N_neg + V)
+
+#calculate loglikelihood
+for word in list_words:
+    log_likelihood= np.log(p_w_pos / p_w_neg)
+    table.update_loglikelihood(log_likelihood, word)
