@@ -19,8 +19,23 @@ pos_size = len(all_positive_tweets)
 neg_size = len(all_negative_tweets)
 ys = np.append(np.ones(pos_size), np.zeros(neg_size))
 
-#build freqs table database and the utils table
-table = FreqsTable.build_from(tweets, ys)
+########################## equal to cousera ###################################
+test_pos = all_positive_tweets[4000:]
+train_pos = all_positive_tweets[:4000]
+test_neg = all_negative_tweets[4000:]
+train_neg = all_negative_tweets[:4000]
+
+train_x = train_pos + train_neg
+test_x = test_pos + test_neg
+
+# avoid assumptions about the length of all_positive_tweets
+train_y = np.append(np.ones(len(train_pos)), np.zeros(len(train_neg)))
+test_y = np.append(np.ones(len(test_pos)), np.zeros(len(test_neg)))
+
+############################################################################
+
+#build freqs table database and the utils table | tweets instead of train_x
+table = FreqsTable.build_from(train_x, ys)
 table.create_utils()
 
 ########################### TRAIN #########################################
@@ -53,11 +68,12 @@ freq_neg = table.get_column('neg_freq')
 list_words = table.get_column('word')
 
 #probability of each word being positive or negative
-for freq_p, freq_n in zip(freq_pos, freq_neg):
+for freq_p, freq_n, word in zip(freq_pos, freq_neg, list_words):
     p_w_pos = (freq_p + 1) / (N_pos + V)
     p_w_neg = (freq_n + 1) / (N_neg + V)
 
-#calculate loglikelihood
-for word in list_words:
+    #calculate loglikelihood
     log_likelihood= np.log(p_w_pos / p_w_neg)
     table.update_loglikelihood(log_likelihood, word)
+
+    #print("PALAVRA",word,"p_w_pos",p_w_pos,"p_w_neg",p_w_neg,"log_likelihood",log_likelihood)

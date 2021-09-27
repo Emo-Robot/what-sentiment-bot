@@ -55,11 +55,19 @@ class FreqsTable():
         # create  cursor
         cur = conn.cursor()
         return conn, cur
+    
 
     def __disconnect(self, conn):
         conn.commit()
         conn.close()
 
+    def connect(self):
+        freqs_path = os.path.abspath("ml/naive_bayes/db/freqs_table/db.db")
+        db = sqlite3.connect(freqs_path)
+        return db
+    
+    def close(self, db):
+        db.close()
     ####################### Query & Fetch #################################
     def fetch_all_words(self):
         conn, cur = self.__connect_bd()
@@ -104,6 +112,30 @@ class FreqsTable():
         self.__disconnect(conn)
 
         return column
+
+    def get_utils(self):
+        conn, cur = self.__connect_bd()
+        
+        logprior = [logprior[0] for logprior in cur.execute('SELECT logprior from utils')]
+
+        self.__disconnect(conn)
+
+        return logprior
+
+    def get_loglikelihood(self, word:str):
+        conn, cur = self.__connect_bd()
+
+        cur.execute('SELECT loglikelihood FROM words WHERE word LIKE ?',(word,))
+
+        loglikelihood = cur.fetchone()[0]
+
+        #cur.execute('SELECT loglikelihood FROM words')
+        #loglikelihood = cur.fetchall()
+        
+        self.__disconnect(conn)
+
+        return loglikelihood
+
     ########################### CRUD ##################################
 
     def __create_words_freqs(self):
@@ -155,14 +187,3 @@ class FreqsTable():
         cur.execute("INSERT INTO utils (logprior) values(?)",(logprior,))
         
         self.__disconnect(conn)
-    
-    # def add_word_set(self, word: str, sentiment: int, pos_freq: int, neg_freq: int):
-    #     conn, cur = self.__connect_bd(self)
-
-    #     ratio = pos_freq/neg_freq
-
-    #     cur.execute("INSERT INTO freqs VALUES ({pos_freq},{neg_freq},{ratio})")
-    #     cur.execute(
-    #         "INSERT INTO words VALUES ({word}, {sentiment}, {freqs_cur.lastrowid})")
-
-    #     self.__disconnect(conn)
