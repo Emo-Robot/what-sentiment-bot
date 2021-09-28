@@ -6,6 +6,9 @@
 
 import tweepy
 import logging
+import sys
+sys.path.append('../what-sentiment-bot/bots')
+
 from config import create_api
 import time
 
@@ -24,7 +27,7 @@ def check_mentions(api, since_id):
             logger.info(f"Answering to {tweet.user.name}")
 
             api.update_status(
-                status="Please reach us via DM",
+                status="Test simple reply",
                 in_reply_to_status_id=tweet.id,
             )
     return new_since_id
