@@ -1,8 +1,7 @@
-
-from db.freqs_table.freqs_table import FreqsTable
 import sys
-sys.path.append('../what-sentiment-bot/preprocess')
-from preprocess import preprocess_tweet
+sys.path.append('../what-sentiment-bot/')
+from preprocess.preprocess import preprocess_tweet
+from ml.naive_bayes.db.freqs_table.freqs_table import FreqsTable
 
 def predict(tweet):
     db = FreqsTable()
@@ -16,14 +15,13 @@ def predict(tweet):
 
     for word in words:
         loglikelihood = db.get_loglikelihood(word)
+
         probability += loglikelihood
         
-
-    return probability
-
-def main():
-    tweet = 'i am sad'
-    p = predict(tweet)
-    print(p)
-
-main()
+    if probability >= 1:
+        sentiment = 'positive'
+    
+    else:
+        sentiment = 'negative'
+        
+    return probability, sentiment

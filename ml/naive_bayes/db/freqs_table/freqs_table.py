@@ -2,8 +2,8 @@ import os.path
 import sqlite3
 import numpy as np
 import sys
-sys.path.append('../what-sentiment-bot/preprocess')
-from preprocess import preprocess_tweet
+sys.path.append('../what-sentiment-bot/')
+from preprocess.preprocess import preprocess_tweet
 
 
 class FreqsTable():
@@ -127,11 +127,12 @@ class FreqsTable():
 
         cur.execute('SELECT loglikelihood FROM words WHERE word LIKE ?',(word,))
 
-        loglikelihood = cur.fetchone()[0]
+        result = cur.fetchone()
+        if result is not None:
+            loglikelihood = result[0]
+        else:
+            loglikelihood = 0
 
-        #cur.execute('SELECT loglikelihood FROM words')
-        #loglikelihood = cur.fetchall()
-        
         self.__disconnect(conn)
 
         return loglikelihood
