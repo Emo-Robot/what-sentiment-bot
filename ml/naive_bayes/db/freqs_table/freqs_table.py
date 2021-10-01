@@ -49,7 +49,7 @@ class FreqsTable():
     ########################### CONNECTION ##################################
     def __connect_bd(self):
         # create words table
-        freqs_path = os.path.abspath("ml/naive_bayes/db/freqs_table/db.db")
+        freqs_path = os.path.abspath("what-sentiment-bot/ml/naive_bayes/db/freqs_table/db.db")
         # connect to db
         conn = sqlite3.connect(freqs_path)
         # create  cursor
@@ -62,7 +62,7 @@ class FreqsTable():
         conn.close()
 
     def connect(self):
-        freqs_path = os.path.abspath("ml/naive_bayes/db/freqs_table/db.db")
+        freqs_path = os.path.abspath("what-sentiment-bot/ml/naive_bayes/db/freqs_table/db.db")
         db = sqlite3.connect(freqs_path)
         return db
     

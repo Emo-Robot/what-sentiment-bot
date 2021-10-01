@@ -3,13 +3,13 @@
 #!/usr/bin/env python
 # tweepy-bots/bots/autoreply.py
 
-import sys
 
-import nltk
+import sys
 sys.path.append('../what-sentiment-bot/')
 from bots.config import create_api
 from ml.naive_bayes.predict import predict
 from bots.utils.email_utils import email_error_report
+import nltk
 import time
 import tweepy
 import logging
@@ -25,7 +25,7 @@ def check_mentions(api, since_id):
         text = ""
 
         new_since_id = max(tweet.id, new_since_id)
-        with open("bots/reply/since_id.txt", "w") as f:
+        with open("what-sentiment-bot/bots/reply/since_id.txt", "w") as f:
             f.write('%d' % new_since_id)
 
         #if it has a father, reply to the father
@@ -79,7 +79,7 @@ def main():
     #api
     api = create_api()
     #get since is
-    f = open("bots/reply/since_id.txt", "r")
+    f = open("what-sentiment-bot/bots/reply/since_id.txt", "r")
     since_id = int(f.readline())
     f.close()
     #run schedule
