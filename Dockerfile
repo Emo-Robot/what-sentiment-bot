@@ -1,5 +1,8 @@
 FROM python:3.9-alpine
 
+#GCC COMPILER FOR "Building wheel for numpy (PEP 517)"
+RUN apk add gcc libc-dev
+
 #BOTS
 COPY bots/reply/ /bots/reply/
 COPY bots/utils/ /bots/utils/
