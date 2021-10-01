@@ -3,7 +3,7 @@ import sqlite3
 import numpy as np
 import sys
 sys.path.append('../what-sentiment-bot/')
-from preprocess.preprocess import preprocess_tweet
+from ml.preprocess.preprocess import preprocess_tweet
 
 
 class FreqsTable():

@@ -1,6 +1,6 @@
 import sys
-sys.path.append('../what-sentiment-bot/preprocess')
-from preprocess import preprocess_tweet
+sys.path.append('../what-sentiment-bot/')
+from ml.preprocess import preprocess_tweet
 
 from test_utils import *
 import test_utils as test

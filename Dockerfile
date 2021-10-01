@@ -1,9 +1,16 @@
-FROM python:3.7-alpine
+FROM python:3.9-alpine
 
-# COPY bots/config.py /bots/
-# COPY bots/favretweet.py /bots/
-# COPY requirements.txt /tmp
-# RUN pip3 install -r /tmp/requirements.txt
+#BOTS
+COPY bots/reply/ /bots/reply/
+COPY bots/utils/ /bots/utils/
+COPY bots/config.py /bots/
+#ML
+COPY ml/    /ml/
 
-# WORKDIR /bots
-# CMD ["python3", "favretweet.py"]
+#RUN ENVIROMENT
+COPY requirements.txt /tmp
+RUN pip3 install -r /tmp/requirements.txt
+
+#COMMANDS
+WORKDIR /bots
+CMD ["python3", "reply/reply.py"]

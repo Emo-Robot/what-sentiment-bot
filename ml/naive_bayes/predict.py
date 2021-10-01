@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../what-sentiment-bot/')
-from preprocess.preprocess import preprocess_tweet
+from ml.preprocess.preprocess import preprocess_tweet
 from ml.naive_bayes.db.freqs_table.freqs_table import FreqsTable
 
 def predict(tweet):

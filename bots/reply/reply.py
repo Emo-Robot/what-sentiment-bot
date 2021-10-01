@@ -4,6 +4,8 @@
 # tweepy-bots/bots/autoreply.py
 
 import sys
+
+import nltk
 sys.path.append('../what-sentiment-bot/')
 from bots.config import create_api
 from ml.naive_bayes.predict import predict
@@ -72,15 +74,20 @@ def follow_followers(api):
             follower.follow()
 
 def main():
+    #download necessary package data
+    nltk.download('stopwords')
+    #api
     api = create_api()
+    #get since is
     f = open("bots/reply/since_id.txt", "r")
     since_id = int(f.readline())
     f.close()
+    #run schedule
     while True:
         since_id = check_mentions(api, since_id)
         follow_followers(api)
         logger.info("Waiting...")
-        time.sleep(15)
+        time.sleep(30)
 
 
 if __name__ == "__main__":

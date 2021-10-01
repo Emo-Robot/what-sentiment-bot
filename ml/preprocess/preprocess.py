@@ -10,8 +10,6 @@ import numpy as np
 # removing undesired substrigns
 def preprocess_tweet(tweet):
     stemmer = PorterStemmer()
-    # TODO installing stopwords every time
-    # nltk.download('stopwords')
     stopwords_en = stopwords.words('english')
 
     #print('\033[92m' + tweet)
