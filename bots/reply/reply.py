@@ -22,7 +22,7 @@ def check_mentions(api, since_id):
     logger.info("Retrieving mentions")
     new_since_id = since_id
     for tweet in tweepy.Cursor(api.mentions_timeline, since_id=since_id).items():
-        text = ""
+        the_tweet = tweet
 
         new_since_id = max(tweet.id, new_since_id)
         with open("what-sentiment-bot/bots/reply/since_id.txt", "w") as f:
@@ -33,7 +33,8 @@ def check_mentions(api, since_id):
             logger.info(f"user that tagged: {tweet.user.name}")
             
             try:
-                text = api.get_status(id = tweet.in_reply_to_status_id).text
+                the_tweet = api.get_status(id = tweet.in_reply_to_status_id)
+                text = the_tweet.text
             except tweepy.TweepError as error:
                 if error.api_code in [179, 144]:
                     logger.info('not authorized or unexisting id')
@@ -41,18 +42,23 @@ def check_mentions(api, since_id):
                     continue
                 else:
                     email_error_report(error)
+        #predict
+        probability, sentiment = predict(the_tweet.text)
+        
+        #if no words where recognized probably its not english
+        if probability == 0:
+            the_reply = "Sorry we don't recognize your language "
         else:
-            text = tweet.text
+            the_reply = "That sounds like a "+ sentiment +" tweet"
 
-        probability, sentiment = predict(text)
-        text = "That sounds like a "+ sentiment +" tweet"
-
-        logger.info(f"user: {tweet.user.name}")
-        logger.info(f"the tweet: {tweet.text}")
+        logger.info(f"user: {the_tweet.user.name}")
+        logger.info(f"the tweet: {the_tweet.text}")
+        logger.info(f"the probability: {probability}")
+        logger.info(f"the reply: {the_reply}")
 
         try:
             api.update_status(
-                status=text,
+                status=the_reply,
                 in_reply_to_status_id=tweet.id,
                 auto_populate_reply_metadata=True
             )
@@ -70,8 +76,12 @@ def follow_followers(api):
     logger.info("Retrieving and following followers")
     for follower in tweepy.Cursor(api.followers).items():
         if not follower.following:
-            logger.info(f"Following {follower.name}")
-            follower.follow()
+            try:
+                logger.info(f"Following {follower.name}")
+                follower.follow()
+            except tweepy.TweepError as error:
+                logger.info("code \n" + error.api_code +"reason \n" + error.reason + "cause \n" + error.__cause__)
+                email_error_report(error)
 
 def main():
     #download necessary package data
