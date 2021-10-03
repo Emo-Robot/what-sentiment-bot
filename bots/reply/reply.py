@@ -27,6 +27,8 @@ def check_mentions(api, since_id):
         new_since_id = max(tweet.id, new_since_id)
         with open("what-sentiment-bot/bots/reply/since_id.txt", "w") as f:
             f.write('%d' % new_since_id)
+        #TODO
+        email_error_report("NEW ID: " + str(new_since_id))
 
         #if it has a father, reply to the father
         if tweet.in_reply_to_status_id is not None:
@@ -80,8 +82,13 @@ def follow_followers(api):
                 logger.info(f"Following {follower.name}")
                 follower.follow()
             except tweepy.TweepError as error:
-                logger.info("code \n" + error.api_code +"reason \n" + error.reason + "cause \n" + error.__cause__)
-                email_error_report(error)
+                if error.api_code == 160:
+                    logger.info(error.reason)
+                    email_error_report(error.reason)
+                    continue
+                else:
+                    logger.info("code \n" + str(error.api_code) +"reason \n" + error.reason + "cause \n" + error.__cause__)
+                    email_error_report(error)
 
 def main():
     #download necessary package data
