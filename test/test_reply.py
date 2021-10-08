@@ -19,8 +19,21 @@ api = create_api()
 
 #tweet with the explicit mention @what_sentiment
 tweet = api.get_status(1444125231258423301)
-print(tweet.user_mentions)
+print(tweet.text)
+print("##########################################")
 
 #tweet without the excplicit mention
 tweet = api.get_status(1444498192280731657)
-print(tweet.user_mentions)
+print(tweet.text)
+print("##########################################")
+
+tweet = api.get_status(1446474943542272001)
+print(tweet.text)
+mentions = tweet.entities["user_mentions"]
+count = 0
+for x in mentions:
+    if x["screen_name"] == "what_sentiment":
+        count +=1
+print(count)
+print("##########################################")
+
