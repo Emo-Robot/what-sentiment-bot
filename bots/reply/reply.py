@@ -7,88 +7,15 @@
 import sys
 sys.path.append('../what-sentiment-bot/')
 from bots.config import create_api
-from ml.naive_bayes.predict import predict
-from bots.utils.email_utils import email_error_report
 import nltk
 import time
-import tweepy
 import logging
+from check_mention import check_mentions
+from follow_follower import follow_followers
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
-def check_mentions(api, since_id):
-    
-    logger.info("Retrieving mentions")
-    new_since_id = since_id
-    for tweet in tweepy.Cursor(api.mentions_timeline, since_id=since_id).items():
-        the_tweet = tweet
-
-        new_since_id = max(tweet.id, new_since_id)
-        with open("what-sentiment-bot/bots/reply/since_id.txt", "w") as f:
-            f.write('%d' % new_since_id)
-        #TODO
-        email_error_report("NEW ID: " + str(new_since_id))
-
-        #if it has a father, reply to the father
-        if tweet.in_reply_to_status_id is not None:
-            logger.info(f"user that tagged: {tweet.user.name}")
-            
-            try:
-                the_tweet = api.get_status(id = tweet.in_reply_to_status_id)
-                text = the_tweet.text
-            except tweepy.TweepError as error:
-                if error.api_code in [179, 144]:
-                    logger.info('not authorized or unexisting id')
-                    email_error_report("not authorized or unexisting id, code 179 & 144")
-                    continue
-                else:
-                    email_error_report(error)
-        #predict
-        probability, sentiment = predict(the_tweet.text)
-        
-        #if no words where recognized probably its not english
-        if probability == 0:
-            the_reply = "Sorry we don't recognize your language "
-        else:
-            the_reply = "That sounds like a "+ sentiment +" tweet"
-
-        logger.info(f"user: {the_tweet.user.name}")
-        logger.info(f"the tweet: {the_tweet.text}")
-        logger.info(f"the probability: {probability}")
-        logger.info(f"the reply: {the_reply}")
-
-        try:
-            api.update_status(
-                status=the_reply,
-                in_reply_to_status_id=tweet.id,
-                auto_populate_reply_metadata=True
-            )
-        except tweepy.TweepError as error:
-            if error.api_code == 187:
-                logger.info('duplicate message')
-                email_error_report('duplicate message, code 187')
-            else:
-                email_error_report(error)
-    logger.info("")
-    print()
-    return new_since_id
-
-def follow_followers(api):
-    logger.info("Retrieving and following followers")
-    for follower in tweepy.Cursor(api.followers).items():
-        if not follower.following:
-            try:
-                logger.info(f"Following {follower.name}")
-                follower.follow()
-            except tweepy.TweepError as error:
-                if error.api_code == 160:
-                    logger.info(error.reason)
-                    email_error_report(error.reason)
-                    continue
-                else:
-                    logger.info("code \n" + str(error.api_code) +"reason \n" + error.reason + "cause \n" + error.__cause__)
-                    email_error_report(error)
 
 def main():
     #download necessary package data
@@ -96,15 +23,23 @@ def main():
     #api
     api = create_api()
     #get since is
-    f = open("what-sentiment-bot/bots/reply/since_id.txt", "r")
+    f = open("bots/reply/since_id.txt", "r")
     since_id = int(f.readline())
     f.close()
     #run schedule
+    count = 0
     while True:
         since_id = check_mentions(api, since_id)
-        follow_followers(api)
+        #run follow every 5 min
+        if count == 5:
+            follow_followers(api)
+            count = 0
         logger.info("Waiting...")
-        time.sleep(30)
+        
+        time.sleep(60)
+
+        count = count+1
+
 
 
 if __name__ == "__main__":
