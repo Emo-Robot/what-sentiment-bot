@@ -7,6 +7,7 @@
 import sys
 sys.path.append('../what-sentiment-bot/')
 from bots.config import create_api
+from bots.reply.db.dynamo_db import *
 import nltk
 import time
 import logging
@@ -22,10 +23,20 @@ def main():
     nltk.download('stopwords')
     #api
     api = create_api()
-    #get since is
+    #create table and get since id
+    utils_table = create_utils_table()
+    if utils_table:
+        print("dynamo table status:", utils_table.table_status)
+
+    #TODO put old since id
     f = open("bots/reply/since_id.txt", "r")
     since_id = int(f.readline())
     f.close()
+    put_since_id(since_id)
+
+    #get since id
+    since_id = get_since_id()
+
     #run schedule
     count = 0
     while True:

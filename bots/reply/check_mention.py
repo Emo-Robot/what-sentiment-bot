@@ -1,10 +1,8 @@
 import sys
 sys.path.append('../what-sentiment-bot/')
-from bots.config import create_api
+from bots.reply.db.dynamo_db import *
 from ml.naive_bayes.predict import predict
 from bots.utils.email_utils import email_error_report
-import nltk
-import time
 import tweepy
 import logging
 from check_duplicate_metion import check_duplicated_mentions
@@ -19,11 +17,15 @@ def check_mentions(api, since_id):
     for tweet in tweepy.Cursor(api.mentions_timeline, since_id=since_id).items():
         the_tweet = tweet
 
+        #update id on db
         new_since_id = max(tweet.id, new_since_id)
+        put_since_id(new_since_id)
+
+        #TODO while testing only
+        get_since_id()
         with open("bots/reply/since_id.txt", "w") as f:
             f.write('%d' % new_since_id)
-        #TODO
-        email_error_report("NEW ID: " + str(new_since_id))
+
 
         #if it has a father, reply to the father
         if tweet.in_reply_to_status_id is not None and check_duplicated_mentions(api.get_status(id = tweet.in_reply_to_status_id)) == 0:
@@ -32,7 +34,6 @@ def check_mentions(api, since_id):
             
             try:
                 the_tweet = api.get_status(id = tweet.in_reply_to_status_id)
-                text = the_tweet.text
             except tweepy.TweepError as error:
                 if error.api_code in [179, 144]:
                     logger.info('not authorized or unexisting id')
@@ -40,15 +41,14 @@ def check_mentions(api, since_id):
                     continue
                 else:
                     email_error_report(error)
-        #TODO ELSE
-        else if tweet.in_reply_to_status_id is not None and check_duplicated_mentions(api.get_status(id = tweet.in_reply_to_status_id)) >= 1:
+
+        elif tweet.in_reply_to_status_id is not None and check_duplicated_mentions(api.get_status(id = tweet.in_reply_to_status_id)) >= 1:
             
             if check_duplicated_mentions(tweet) >= 2:
                 logger.info(f"user that tagged: {tweet.user.name}")
             
                 try:
                     the_tweet = api.get_status(id = tweet.in_reply_to_status_id)
-                    text = the_tweet.text
                 except tweepy.TweepError as error:
                     if error.api_code in [179, 144]:
                         logger.info('not authorized or unexisting id')

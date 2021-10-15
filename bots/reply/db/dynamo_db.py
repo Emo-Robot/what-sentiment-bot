@@ -1,12 +1,12 @@
 import boto3
 # https://docs.aws.amazon.com/pt_br/amazondynamodb/latest/developerguide/GettingStarted.Python.01.html
-# https://jualabs.com/2021/03/02/criando-um-crud-basico-em-python-com-dynamodb/
+# https://jualabs.com/2021/03/02/criando-um-crud-basico-em-p ython-com-dynamodb/
 
 
 def get_dynamo(dynamodb=None):
     if not dynamodb:
         dynamodb = boto3.resource(
-            'dynamodb', endpoint_url="http://localhost:8000")
+            'dynamodb', region_name="us-east-1")
         return dynamodb
 
 
@@ -18,15 +18,15 @@ def create_utils_table(dynamodb=None):
             TableName='Utils',
             KeySchema=[
                 {
-                    'AttributeName': 'since_id',
-                    'KeyType': 'HASH'  # Just hash beacause there will be no other since id
-                }
+                    'AttributeName': 'name',
+                    'KeyType': 'HASH'
+                },
             ],
             AttributeDefinitions=[
                 {
-                    'AttributeName': 'since_id',
-                    'AttributeType': 'N'
-                }
+                    'AttributeName': 'name',
+                    'AttributeType': 'S'
+                },
             ],
             ProvisionedThroughput={
                 'ReadCapacityUnits': 1,
@@ -41,9 +41,10 @@ def create_utils_table(dynamodb=None):
 def put_since_id(since_id, dynamodb=None):
     dynamodb = get_dynamo(dynamodb)
     table = dynamodb.Table('Utils')
-    print("adding id", since_id)
+    print("adding since id:", since_id)
     response = table.put_item(
         Item={
+            'name': 'since_id',
             'since_id': since_id
         }
     )
@@ -54,13 +55,5 @@ def get_since_id(dynamodb=None):
     table = dynamodb.Table('Utils')
     response = table.scan()
     since_id = response['Items'][0]['since_id']
-    print(since_id)
-    return since_id
-
-#TODO update
-
-utils_table = create_utils_table()
-if utils_table:
-    print(utils_table.table_status)
-put_since_id(231231)
-get_since_id()
+    print("Utils table items:",response['Items'])
+    return int(since_id)
