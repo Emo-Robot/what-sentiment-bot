@@ -21,12 +21,6 @@ def check_mentions(api, since_id):
         new_since_id = max(tweet.id, new_since_id)
         put_since_id(new_since_id)
 
-        #TODO while testing only
-        get_since_id()
-        with open("bots/reply/since_id.txt", "w") as f:
-            f.write('%d' % new_since_id)
-
-
         #if it has a father, reply to the father
         if tweet.in_reply_to_status_id is not None and check_duplicated_mentions(api.get_status(id = tweet.in_reply_to_status_id)) == 0:
             
