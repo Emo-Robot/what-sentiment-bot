@@ -26,13 +26,16 @@ def main():
     #create table and get since id
     utils_table = create_utils_table()
     if utils_table:
-        print("dynamo table status:", utils_table.table_status)
+        while utils_table.table_status == "CREATING":
+            print("dynamo table status:", utils_table.table_status)
+            time.sleep(10)
+
 
     #TODO put old since id
-    f = open("bots/reply/since_id.txt", "r")
-    since_id = int(f.readline())
-    f.close()
-    put_since_id(since_id)
+    # f = open("bots/reply/since_id.txt", "r")
+    # since_id = int(f.readline())
+    # f.close()
+    # put_since_id(since_id)
 
     #get since id
     since_id = get_since_id()

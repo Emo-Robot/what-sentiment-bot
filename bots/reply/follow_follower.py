@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
 
-
+#TODO: Save list of users already asked to follow
 def follow_followers(api):
     logger.info("Retrieving and following followers")
     for follower in tweepy.Cursor(api.followers).items():

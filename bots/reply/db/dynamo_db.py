@@ -1,6 +1,6 @@
 import boto3
 # https://docs.aws.amazon.com/pt_br/amazondynamodb/latest/developerguide/GettingStarted.Python.01.html
-# https://jualabs.com/2021/03/02/criando-um-crud-basico-em-p ython-com-dynamodb/
+# https://jualabs.com/2021/03/02/criando-um-crud-basico-em-python-com-dynamodb/
 
 
 def get_dynamo(dynamodb=None):
