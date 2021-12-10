@@ -1,4 +1,3 @@
-from nltk.corpus import twitter_samples
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from nltk.tokenize import TweetTokenizer
